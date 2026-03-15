@@ -2,6 +2,7 @@ import streamlit as st
 from pytrends.request import TrendReq
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import numpy as np
 
 st.set_page_config(page_title="AI Trend Analyzer", layout="wide")
@@ -20,50 +21,31 @@ if keyword:
 
         data = pytrends.interest_over_time()
 
-        # =========================
-        # VALIDATION
-        # =========================
-
         if data.empty or data[keyword].sum() == 0:
-
             st.error("Keyword not available or no trend data found")
 
         else:
 
             data = data.drop(columns=['isPartial'])
 
-            # =========================
-            # Trend Score
-            # =========================
+            # ======================
+            # METRICS
+            # ======================
 
             trend_score = data[keyword].mean()
-
-            st.metric("Trend Score", f"{trend_score:.2f}%")
-
-            # =========================
-            # Accuracy Calculation
-            # =========================
-
             std_dev = data[keyword].std()
-
-            accuracy = 100 - (std_dev / 100 * 100)
-
-            if accuracy < 0:
-                accuracy = 0
-
-            st.metric("Prediction Accuracy", f"{accuracy:.2f}%")
-
-            # =========================
-            # Growth Rate
-            # =========================
-
+            accuracy = max(0, 100 - (std_dev))
             growth_rate = data[keyword].pct_change().mean()*100
 
-            st.metric("Growth Rate", f"{growth_rate:.2f}%")
+            col1, col2, col3 = st.columns(3)
 
-            # =========================
-            # Recommendation System
-            # =========================
+            col1.metric("Trend Score", f"{trend_score:.2f}%")
+            col2.metric("Prediction Accuracy", f"{accuracy:.2f}%")
+            col3.metric("Growth Rate", f"{growth_rate:.2f}%")
+
+            # ======================
+            # TREND RECOMMENDATION
+            # ======================
 
             st.subheader("Trend Recommendation")
 
@@ -74,73 +56,112 @@ if keyword:
             else:
                 st.warning(f"Low trending topic | Confidence: {accuracy:.2f}%")
 
-            # =========================
-            # Visualization 1
-            # =========================
+            # ======================
+            # RELATED TRENDING TOPICS
+            # ======================
 
-            st.subheader("1 Trend Over Time")
+            st.subheader("Related Trending Topics")
+
+            related = pytrends.related_queries()
+
+            if related[keyword]['top'] is not None:
+
+                related_df = related[keyword]['top'].head(10)
+
+                st.dataframe(related_df)
+
+            # ======================
+            # 1 LINE CHART
+            # ======================
+
+            st.subheader("1 Trend Over Time (Line Chart)")
 
             fig1 = px.line(data, x=data.index, y=keyword)
 
             st.plotly_chart(fig1)
 
-            # =========================
-            # Visualization 2
-            # =========================
+            # ======================
+            # 2 BAR CHART
+            # ======================
 
-            st.subheader("2 Trend Distribution")
-
-            fig2 = px.histogram(data, x=keyword)
-
-            st.plotly_chart(fig2)
-
-            # =========================
-            # Visualization 3
-            # =========================
+            st.subheader("2 Monthly Trend (Bar Chart)")
 
             monthly = data.resample('M').mean()
 
-            st.subheader("3 Monthly Trend")
+            fig2 = px.bar(monthly, x=monthly.index, y=keyword)
 
-            fig3 = px.bar(monthly, x=monthly.index, y=keyword)
+            st.plotly_chart(fig2)
+
+            # ======================
+            # 3 PIE CHART
+            # ======================
+
+            st.subheader("3 Trend Distribution (Pie Chart)")
+
+            bins = pd.cut(data[keyword], bins=5).value_counts()
+
+            pie_df = pd.DataFrame({
+                "Range": bins.index.astype(str),
+                "Count": bins.values
+            })
+
+            fig3 = px.pie(pie_df, names="Range", values="Count")
 
             st.plotly_chart(fig3)
 
-            # =========================
-            # Visualization 4
-            # =========================
+            # ======================
+            # 4 AREA CHART
+            # ======================
 
-            data["moving_avg"] = data[keyword].rolling(7).mean()
+            st.subheader("4 Area Growth Chart")
 
-            st.subheader("4 Moving Average Trend")
-
-            fig4 = px.line(data, x=data.index, y=["moving_avg"])
+            fig4 = px.area(data, x=data.index, y=keyword)
 
             st.plotly_chart(fig4)
 
-            # =========================
-            # Visualization 5
-            # =========================
+            # ======================
+            # 5 SCATTER PLOT
+            # ======================
 
-            st.subheader("5 Area Growth Chart")
+            st.subheader("5 Scatter Plot")
 
-            fig5 = px.area(data, x=data.index, y=keyword)
+            fig5 = px.scatter(data, x=data.index, y=keyword)
 
             st.plotly_chart(fig5)
 
-            # =========================
-            # Visualization 6
-            # =========================
+            # ======================
+            # 6 HISTOGRAM
+            # ======================
 
-            st.subheader("6 Box Plot Variability")
+            st.subheader("6 Trend Distribution Histogram")
 
-            fig6 = px.box(data, y=keyword)
+            fig6 = px.histogram(data, x=keyword)
 
             st.plotly_chart(fig6)
 
-            # =========================
-            # Visualization 7
-            # =========================
+            # ======================
+            # 7 STACKED BAR CHART
+            # ======================
+
+            st.subheader("7 Stacked Bar Chart")
+
+            data['moving_avg'] = data[keyword].rolling(7).mean()
+
+            stacked_df = data[[keyword, 'moving_avg']].dropna()
+
+            fig7 = px.bar(
+                stacked_df,
+                x=stacked_df.index,
+                y=[keyword, 'moving_avg']
+            )
+
+            st.plotly_chart(fig7)
+
+            # ======================
+            # 8 HEATMAP
+            # ======================
+
+            st.subheader("8 Trend Heatmap")
 
             heat = data.copy()
 
@@ -149,15 +170,46 @@ if keyword:
 
             pivot = heat.pivot_table(values=keyword, index="Month", columns="Day")
 
-            st.subheader("7 Trend Heatmap")
+            fig8 = px.imshow(pivot)
 
-            fig7 = px.imshow(pivot)
+            st.plotly_chart(fig8)
 
-            st.plotly_chart(fig7)
+            # ======================
+            # 9 WATERFALL CHART
+            # ======================
 
-            # =========================
-            # Region Analysis
-            # =========================
+            st.subheader("9 Waterfall Chart")
+
+            diff = data[keyword].diff().fillna(0)
+
+            fig9 = go.Figure(go.Waterfall(
+                y=diff
+            ))
+
+            st.plotly_chart(fig9)
+
+            # ======================
+            # 10 BUBBLE CHART
+            # ======================
+
+            st.subheader("10 Bubble Chart")
+
+            bubble_df = data.reset_index()
+
+            bubble_df["size"] = bubble_df[keyword] * 2
+
+            fig10 = px.scatter(
+                bubble_df,
+                x="date",
+                y=keyword,
+                size="size"
+            )
+
+            st.plotly_chart(fig10)
+
+            # ======================
+            # REGION ANALYSIS
+            # ======================
 
             st.subheader("Top Regions")
 
@@ -167,19 +219,19 @@ if keyword:
 
                 region = region.sort_values(by=keyword, ascending=False).head(10)
 
-                fig8 = px.bar(region, x=region.index, y=keyword)
+                fig_region = px.bar(region, x=region.index, y=keyword)
 
-                st.plotly_chart(fig8)
+                st.plotly_chart(fig_region)
 
-            # =========================
-            # Peak Trend
-            # =========================
+            # ======================
+            # PEAK TREND
+            # ======================
 
             peak_value = data[keyword].max()
             peak_date = data[keyword].idxmax()
 
             st.success(f"Peak Trend: {peak_value}% on {peak_date.date()}")
 
-    except:
+    except Exception as e:
 
         st.error("Invalid keyword or data unavailable")
