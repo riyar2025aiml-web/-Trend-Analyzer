@@ -28,9 +28,7 @@ if keyword:
 
             data = data.drop(columns=['isPartial'])
 
-            # ======================
-            # METRICS
-            # ======================
+         
 
             trend_score = data[keyword].mean()
             std_dev = data[keyword].std()
@@ -43,9 +41,6 @@ if keyword:
             col2.metric("Prediction Accuracy", f"{accuracy:.2f}%")
             col3.metric("Growth Rate", f"{growth_rate:.2f}%")
 
-            # ======================
-            # TREND RECOMMENDATION
-            # ======================
 
             st.subheader("Trend Recommendation")
 
@@ -56,9 +51,6 @@ if keyword:
             else:
                 st.warning(f"Low trending topic | Confidence: {accuracy:.2f}%")
 
-            # ======================
-            # RELATED TRENDING TOPICS
-            # ======================
 
             st.subheader("Related Trending Topics")
 
@@ -70,9 +62,7 @@ if keyword:
 
                 st.dataframe(related_df)
 
-            # ======================
-            # 1 LINE CHART
-            # ======================
+            
 
             st.subheader("1 Trend Over Time (Line Chart)")
 
@@ -80,10 +70,7 @@ if keyword:
 
             st.plotly_chart(fig1)
 
-            # ======================
-            # 2 BAR CHART
-            # ======================
-
+           
             st.subheader("2 Monthly Trend (Bar Chart)")
 
             monthly = data.resample('M').mean()
@@ -92,9 +79,6 @@ if keyword:
 
             st.plotly_chart(fig2)
 
-            # ======================
-            # 3 PIE CHART
-            # ======================
 
             st.subheader("3 Trend Distribution (Pie Chart)")
 
@@ -109,9 +93,7 @@ if keyword:
 
             st.plotly_chart(fig3)
 
-            # ======================
-            # 4 AREA CHART
-            # ======================
+           
 
             st.subheader("4 Area Growth Chart")
 
@@ -119,9 +101,7 @@ if keyword:
 
             st.plotly_chart(fig4)
 
-            # ======================
-            # 5 SCATTER PLOT
-            # ======================
+           
 
             st.subheader("5 Scatter Plot")
 
@@ -129,9 +109,7 @@ if keyword:
 
             st.plotly_chart(fig5)
 
-            # ======================
-            # 6 HISTOGRAM
-            # ======================
+           
 
             st.subheader("6 Trend Distribution Histogram")
 
@@ -139,9 +117,7 @@ if keyword:
 
             st.plotly_chart(fig6)
 
-            # ======================
-            # 7 STACKED BAR CHART
-            # ======================
+           
 
             st.subheader("7 Stacked Bar Chart")
 
@@ -157,9 +133,6 @@ if keyword:
 
             st.plotly_chart(fig7)
 
-            # ======================
-            # 8 HEATMAP
-            # ======================
 
             st.subheader("8 Trend Heatmap")
 
@@ -174,10 +147,6 @@ if keyword:
 
             st.plotly_chart(fig8)
 
-            # ======================
-            # 9 WATERFALL CHART
-            # ======================
-
             st.subheader("9 Waterfall Chart")
 
             diff = data[keyword].diff().fillna(0)
@@ -188,10 +157,7 @@ if keyword:
 
             st.plotly_chart(fig9)
 
-            # ======================
-            # 10 BUBBLE CHART
-            # ======================
-
+          
             st.subheader("10 Bubble Chart")
 
             bubble_df = data.reset_index()
@@ -207,9 +173,6 @@ if keyword:
 
             st.plotly_chart(fig10)
 
-            # ======================
-            # REGION ANALYSIS
-            # ======================
 
             st.subheader("Top Regions")
 
@@ -222,10 +185,6 @@ if keyword:
                 fig_region = px.bar(region, x=region.index, y=keyword)
 
                 st.plotly_chart(fig_region)
-
-            # ======================
-            # PEAK TREND
-            # ======================
 
             peak_value = data[keyword].max()
             peak_date = data[keyword].idxmax()
