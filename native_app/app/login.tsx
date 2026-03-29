@@ -82,7 +82,7 @@ export default function LoginScreen() {
           <View style={styles.logoRing}>
             <TrendingUp size={36} color={C.accent1} />
           </View>
-          <Text style={styles.appName}>TrendPulse</Text>
+          <Text style={styles.appName}>Twitter</Text>
           <Text style={styles.tagline}>AI-Powered Hashtag Intelligence</Text>
         </View>
 
