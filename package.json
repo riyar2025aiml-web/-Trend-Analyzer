@@ -1,0 +1,7 @@
+{
+  "name": "trend-analyzer-monorepo",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd native_app && npm install && npx expo export -p web"
+  }
+}
