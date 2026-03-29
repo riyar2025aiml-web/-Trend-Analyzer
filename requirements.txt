@@ -3,4 +3,5 @@ pytrends
 pandas
 plotly
 numpy
-
+fastapi
+uvicorn
